@@ -15,6 +15,10 @@ public class Customer {
         customerCounter++;
     }
 
+    public static Customer createCustomer(String[] metaDate) {
+        return new Customer(metaDate[0], metaDate[1], metaDate[2]);
+    }
+
     // Getter-Method
     public String getUid() {
         return uid;

@@ -2,11 +2,13 @@ package me.csci3170.model;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 public class Order {
     String oid, uid, date, shippingState;
-    ArrayList<String> isbnList;
+    List<String> isbnList;
     int quantity;
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -14,13 +16,27 @@ public class Order {
         date = dateFormat.format(new Date());
     }
 
-    public Order(String oid, String uid, ArrayList<String> isbnList) {
+    public Order(String oid, String uid, List<String> isbnList) {
         this.oid = oid;
         this.uid = uid;
         date = dateFormat.format(new Date());
         this.isbnList = isbnList;
         quantity = isbnList.size();
         shippingState = "ordered";
+    }
+
+    public Order(String oid, String uid, String date, List<String> isbnList, int quantity, String shippingState) {
+        this.oid = oid;
+        this.uid = uid;
+        this.date = date;
+        this.isbnList = isbnList;
+        this.quantity = quantity;
+        this.shippingState = shippingState;
+    }
+
+    public static Order createOrder(String[] metaData) {
+        return new Order(metaData[0], metaData[1], metaData[2],
+                Arrays.stream(metaData[3].split(", ")).toList(), Integer.parseInt(metaData[4]), metaData[5]);
     }
 
     // Getter-Method
@@ -36,7 +52,7 @@ public class Order {
         return date;
     }
 
-    public ArrayList<String> getIsbnList() {
+    public List<String> getIsbnList() {
         return isbnList;
     }
 
