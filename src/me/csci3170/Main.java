@@ -4,6 +4,7 @@ import me.csci3170.model.Book;
 import me.csci3170.model.Customer;
 import me.csci3170.model.Order;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -129,12 +130,21 @@ public class Main {
         } while (true);
     }
 
+    public void runOption2_1(String title) throws SQLException {
+        ResultSet resultSet = databaseManager.queryDatabase("SELECT ISBN FROM Book WHERE Title = " + title);
+        System.out.println("Search Result: " + resultSet.getString("Title"));
+    }
+
+    public void runOption2_2() throws SQLException {
+        databaseManager.queryDatabase(""); // SEARCH BOOK
+    }
+
     public void printOption2() {
         System.out.println("===== Customer Operation =====");
         System.out.println(" + System Date: " + new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
         System.out.println("——————————————————————————");
-        System.out.println("> 1. Search a book");
-        System.out.println("> 2. Place an order");
+        System.out.println("> 1. Search a book"); //SQL query
+        System.out.println("> 2. Place an order"); // Create order
         System.out.println("> 3. Check history orders");
         System.out.println("> 4. Back to Main Menu");
         System.out.print(">>> Please Enter Your Query: ");

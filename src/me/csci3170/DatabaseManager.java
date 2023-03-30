@@ -44,6 +44,7 @@ public class DatabaseManager {
                     preparedStatement.setString(2, order.getUid());
                     preparedStatement.setString(3, order.getDate());
                     preparedStatement.setArray(4, database.createArrayOf("String", order.getIsbnList().toArray()));
+                    // String[] vs List<String>
                     preparedStatement.setInt(5, order.getQuantity());
                     preparedStatement.setString(6, order.getShippingState());
                     preparedStatement.executeUpdate();
@@ -63,6 +64,8 @@ public class DatabaseManager {
         preparedStatement.close();
     }
 
+    // updateDatabase("INSERT
+
     public void updateDatabase(String sqlQuery) throws SQLException {
         if (getDatabase() == null)
             return;
@@ -71,6 +74,8 @@ public class DatabaseManager {
         statement.close();
     }
 
+    // queryDatabase("SELECT ISBN FROM Book")
+    // ISBN:
     public ResultSet queryDatabase(String sqlQuery) throws SQLException {
         if (getDatabase() == null)
             return null;

@@ -37,6 +37,7 @@ public class Order {
     public static Order createOrder(String[] metaData) {
         return new Order(metaData[0], metaData[1], metaData[2],
                 Arrays.stream(metaData[3].split(", ")).toList(), Integer.parseInt(metaData[4]), metaData[5]);
+        // String : "3-7503-0256-1, 2-0208-4796-3" -> ["3-7503-0256-1", "2-0208-4796-3"]
     }
 
     // Getter-Method

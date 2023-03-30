@@ -27,7 +27,8 @@ public class Book {
     }
 
     public static Book createBook(String[] metaData) {
-        return new Book(metaData[0], metaData[1], Arrays.stream(metaData[2].split(", ")).toList(), Double.parseDouble(metaData[3]), Integer.parseInt(metaData[4]));
+        return new Book(metaData[0], metaData[1], Arrays.stream(metaData[2].split(", ")).toList()
+                , Double.parseDouble(metaData[3]), Integer.parseInt(metaData[4]));
     }
 
     @Override
