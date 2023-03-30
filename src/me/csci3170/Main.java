@@ -26,7 +26,7 @@ public class Main {
                 switch (input) {
                     case 1 -> main.runOption1();
                     case 2 -> main.runOption2();
-                    case 3 -> main.printOption3();
+                    case 3 -> main.runOption3();
                     case 4 -> main.printOption4();
                     default -> System.out.println("Invalid input.");
                 }
@@ -138,6 +138,28 @@ public class Main {
         System.out.println("> 3. Check history orders");
         System.out.println("> 4. Back to Main Menu");
         System.out.print(">>> Please Enter Your Query: ");
+    }
+
+    public void runOption3() throws SQLException {
+        int input;
+        do {
+            printOption3();
+            try {
+                input = scanner.nextInt();
+                switch (input) {
+                    case 1 -> {}
+                    case 2 -> {}
+                    case 3 -> {}
+                    case 4 -> {
+                        return;
+                    }
+                    default -> System.out.println("Invalid input.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input.");
+                scanner.nextLine();
+            }
+        } while (true);
     }
 
     public void printOption3() {
