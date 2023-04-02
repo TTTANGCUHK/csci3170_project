@@ -115,9 +115,9 @@ public class Main {
             try {
                 input = scanner.nextInt();
                 switch (input) {
-                    case 1 -> {}
-                    case 2 -> {}
-                    case 3 -> {}
+                    case 1 -> runOption2_1();
+                    case 2 -> runOption2_2();
+                    case 3 -> runOption2_3();
                     case 4 -> {
                         return;
                     }
@@ -130,13 +130,97 @@ public class Main {
         } while (true);
     }
 
-    public void runOption2_1(String title) throws SQLException {
-        ResultSet resultSet = databaseManager.queryDatabase("SELECT ISBN FROM Book WHERE Title = " + title);
-        System.out.println("Search Result: " + resultSet.getString("Title"));
+    public void runOption2_1() throws SQLException {
+        do {
+            System.out.println("Please choose either one way to search the book.");
+            System.out.println("> 1. ISBN"); //SQL query
+            System.out.println("> 2. Title"); // Create order
+            System.out.println("> 3. Author");
+
+            try {
+                int input = scanner.nextInt();
+                ResultSet resultSet;
+                System.out.println("Please enter the info: ");
+                String info = scanner.nextLine();
+                switch (input) {
+                    case 1 -> {
+                        // TODO: SQL Query
+                        resultSet = databaseManager.queryDatabase("SELECT ISBN FROM Book WHERE ISBN = " + info);
+                    }
+                    case 2 -> {
+                        // TODO: SQL Query
+                        resultSet = databaseManager.queryDatabase("SELECT ISBN FROM Book WHERE Title = " + info);
+                    }
+                    case 3 -> {
+                        // TODO: SQL Query
+                        // Caution: Author is an array and info is a string for one author
+                        // resultSet = databaseManager.queryDatabase("SELECT ISBN FROM Book WHERE Author = " + info);
+                    }
+                    case 4 -> {
+                        return;
+                    }
+                    default -> System.out.println("Invalid input.");
+                }
+
+                // TODO: Print resultSet with format
+
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input.");
+                scanner.nextLine();
+            }
+
+        } while (true);
+    }
+
+    // TODO: SQL Query
+    public boolean checkStock(String ISBN) throws SQLException {
+        ResultSet resultSet = databaseManager.queryDatabase("");
+        int stock = resultSet.getInt("");
+        return stock > 0;
     }
 
     public void runOption2_2() throws SQLException {
-        databaseManager.queryDatabase(""); // SEARCH BOOK
+        do {
+            boolean flag;
+            System.out.println("Please enter the number of book to be ordered: ");
+            try {
+                int input = scanner.nextInt();
+                if (input <= 0) {
+                    System.out.println("Invalid input.");
+                    scanner.nextLine();
+                    continue;
+                }
+                flag = true;
+                for (int i = 0; i < input; i++) {
+                    System.out.println("Please enter the ISBN of the book: ");
+                    String isbn = scanner.nextLine();
+                    if (!checkStock(isbn)) {
+                        System.out.println("Sorry, this book is out of stock.");
+                        flag = false;
+                        break;
+                    }
+                }
+                if (!flag) {
+                    System.out.println("Sorry, the order is failed because some book is out of stock.");
+
+                } else {
+                    System.out.println("Thank you! The order is placed successfully.");
+                    break;
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input.");
+                scanner.nextLine();
+            }
+
+        } while (true);
+    }
+
+    public void runOption2_3() throws SQLException {
+        System.out.println("Please enter your name: ");
+        String name = scanner.nextLine();
+        // TODO: SQL Query
+        ResultSet resultSet = databaseManager.queryDatabase(""); // select all orders with this customer
+        // TODO: Print result
     }
 
     public void printOption2() {
@@ -157,9 +241,9 @@ public class Main {
             try {
                 input = scanner.nextInt();
                 switch (input) {
-                    case 1 -> {}
-                    case 2 -> {}
-                    case 3 -> {}
+                    case 1 -> runOption3_1();
+                    case 2 -> runOption3_2();
+                    case 3 -> runOption3_3();
                     case 4 -> {
                         return;
                     }
@@ -170,6 +254,51 @@ public class Main {
                 scanner.nextLine();
             }
         } while (true);
+    }
+
+    public void runOption3_1() throws SQLException {
+        System.out.println("Please enter the order ID to be updated: ");
+        String orderID = scanner.nextLine();
+        // TODO: SQL Query
+        ResultSet resultSet = databaseManager.queryDatabase(""); // Get the shipping status first
+        String shippingStatus = resultSet.getString("");
+        if (shippingStatus.contentEquals("shipped")) {
+            System.out.println("Update failed! This order is already shipped.");
+            return;
+        }
+        // TODO: SQL Query
+        databaseManager.updateDatabase(""); // Update the shipping status of the order (from ordered to shipped)
+        System.out.println("Update success! This order is shipped.");
+        // TODO: Print result
+    }
+
+    public void runOption3_2() throws SQLException {
+        System.out.println("Please enter the shipping status: ");
+        String shippingStatus = scanner.nextLine();
+        // TODO: SQL Query
+        ResultSet resultSet = databaseManager.queryDatabase(""); // select all orders with shippingStatus
+        // TODO: Print result
+    }
+
+    public void runOption3_3() throws SQLException {
+        try {
+            System.out.println("Enter number of N: ");
+            int input = scanner.nextInt();
+
+            // TODO: SQL Query
+            ResultSet resultSet = databaseManager.queryDatabase(""); // use count ISBN in order? Then get the first N ISBN
+            String[] isbnList = (String[]) resultSet.getArray("").getArray();
+
+            for (String isbn : isbnList) {
+                // TODO: SQL Query
+                resultSet = databaseManager.queryDatabase(""); // search book by isbn
+                // TODO: Print the book info same as option2_1
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("Invalid input.");
+            scanner.nextLine();
+        }
+
     }
 
     public void printOption3() {
