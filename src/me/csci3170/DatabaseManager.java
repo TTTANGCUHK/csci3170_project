@@ -5,11 +5,13 @@ import me.csci3170.model.Customer;
 import me.csci3170.model.Order;
 
 import java.sql.*;
+import java.util.InputMismatchException;
 import java.util.List;
 
 public class DatabaseManager {
 
-    String USERNAME = "", PASSWORD = "";
+//    String USERNAME = "csci3170", PASSWORD = "testfor3170";
+    String USERNAME = "root", PASSWORD = "csci3170" , DB_URL = "jdbc:mysql://localhost:3306/csci3170";
 
     private Connection database;
     private Statement statement;
@@ -67,8 +69,10 @@ public class DatabaseManager {
     // updateDatabase("INSERT
 
     public void updateDatabase(String sqlQuery) throws SQLException {
-        if (getDatabase() == null)
-            return;
+        System.out.println("running update data base");
+        if (getDatabase() == null){
+            System.out.println("get data base is null");
+            return;}
         statement = getDatabase().createStatement();
         statement.executeUpdate(sqlQuery);
         statement.close();
@@ -89,8 +93,29 @@ public class DatabaseManager {
     }
 
     public void startConnection() throws SQLException {
-        database = DriverManager.getConnection("jdbc:mysql://projgw.cse.cuhk.edu.hk:2712/" + USERNAME + "?autoRe\n" +
-                "connect=true&useSSL=false", USERNAME, PASSWORD);
+        try {
+            // Register JDBC driver
+            Class.forName("com.mysql.jdbc.Driver");
+
+            // Open a connection
+            System.out.println("Connecting to database...");
+            database = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+
+
+
+            // Clean-up environment
+
+        } catch(SQLException se) {
+            // Handle errors for JDBC
+            se.printStackTrace();
+        } catch(Exception e) {
+            // Handle errors for Class.forName
+            e.printStackTrace();
+        }
+
+
+////        database = DriverManager.getConnection("jdbc:mysql://projgw.cse.cuhk.edu.hk:2712/" + USERNAME + "?autoRe\n" +
+////                "connect=true&useSSL=false", USERNAME, PASSWORD);
 
     }
 
