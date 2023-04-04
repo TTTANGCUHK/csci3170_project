@@ -92,7 +92,7 @@ public class DatabaseManager {
             return;}
         statement = getDatabase().createStatement();
         statement.executeUpdate(sqlQuery);
-        statement.close();
+
     }
 
     // queryDatabase("SELECT ISBN FROM Book")
@@ -100,8 +100,13 @@ public class DatabaseManager {
     public ResultSet queryDatabase(String sqlQuery) throws SQLException {
         if (getDatabase() == null)
             return null;
-        statement = getDatabase().createStatement();
-        return statement.executeQuery(sqlQuery);
+        preparedStatement = getDatabase().prepareStatement(sqlQuery);
+
+        return preparedStatement.executeQuery();
+
+//        return preparedStatement.executeQuery();
+//        statement = getDatabase().createStatement();
+//        return statement.executeQuery(sqlQuery);
     }
 
     public void closeStatement() throws SQLException {
