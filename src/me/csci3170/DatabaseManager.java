@@ -13,6 +13,8 @@ public class DatabaseManager {
 //    String USERNAME = "csci3170", PASSWORD = "testfor3170";
     String USERNAME = "root", PASSWORD = "csci3170" , DB_URL = "jdbc:mysql://localhost:3306/csci3170";
 
+    public static String TABLE_BOOKS = "Books", TABLE_ORDERS = "Orders", TABLE_CUSTOMERS = "Customers";
+
     private Connection database;
     private Statement statement;
     private PreparedStatement preparedStatement;
@@ -26,47 +28,62 @@ public class DatabaseManager {
     }
 
     public <T> void insertDatabase(List<T> tList, Class<T> tClass) throws SQLException {
+        int i;
         if (tClass.isAssignableFrom(Book.class)) {
-            preparedStatement = database.prepareStatement("INSERT INTO Book VALUES (?, ?)");
+            i = 0;
+            System.out.println("Uploading Book Records");
+            preparedStatement = database.prepareStatement("INSERT INTO " + TABLE_BOOKS + " VALUES (?, ?, ?, ?, ?)");
             for (T item : tList) {
                 if (item instanceof Book book) {
+                    i++;
+                    System.out.println("Uploading " + i + "/" + tList.size() + " Book Records");
                     preparedStatement.setString(1, book.getIsbn());
                     preparedStatement.setString(2, book.getTitle());
-                    preparedStatement.setArray(3, database.createArrayOf("String", book.getAuthors().toArray()));
+                    preparedStatement.setString(3, book.getAuthors());
                     preparedStatement.setDouble(4, book.getPrice());
                     preparedStatement.setInt(5, book.getStock());
                     preparedStatement.executeUpdate();
                 }
             }
+            System.out.println("Upload Book Records Finished, inserted " + i + " records");
         } else if (tClass.isAssignableFrom(Order.class)) {
-            preparedStatement = database.prepareStatement("INSERT INTO Order VALUES (?, ?)");
+            i = 0;
+            System.out.println("Uploading Order Records");
+            preparedStatement = database.prepareStatement("INSERT INTO " + TABLE_ORDERS + " VALUES (?, ?, ?, ?, ?, ?)");
             for (T item : tList) {
                 if (item instanceof Order order) {
+                    i++;
+                    System.out.println("Uploading " + i + "/" + tList.size() + " Order Records");
                     preparedStatement.setString(1, order.getOid());
                     preparedStatement.setString(2, order.getUid());
                     preparedStatement.setString(3, order.getDate());
-                    preparedStatement.setArray(4, database.createArrayOf("String", order.getIsbnList().toArray()));
-                    // String[] vs List<String>
+                    preparedStatement.setString(4, order.getIsbnList());
                     preparedStatement.setInt(5, order.getQuantity());
                     preparedStatement.setString(6, order.getShippingState());
                     preparedStatement.executeUpdate();
                 }
             }
+            System.out.println("Upload Order Records Finished, inserted " + i + " records");
         } else if (tClass.isAssignableFrom(Customer.class)) {
-            preparedStatement = database.prepareStatement("INSERT INTO Customer VALUES (?, ?)");
+            i = 0;
+            System.out.println("Uploading Customer Records");
+            preparedStatement = database.prepareStatement("INSERT INTO " + TABLE_CUSTOMERS + " VALUES (?, ?, ?)");
             for (T item : tList) {
                 if (item instanceof Customer customer) {
+                    i++;
+                    System.out.println("Uploading " + i + "/" + tList.size() + " Customer Records");
                     preparedStatement.setString(1, customer.getUid());
                     preparedStatement.setString(2, customer.getName());
                     preparedStatement.setString(3, customer.getAddress());
                     preparedStatement.executeUpdate();
                 }
             }
+            System.out.println("Upload Customer Records Finished, inserted " + i + " records");
         }
+        System.out.println("Uploaded records to database successfully");
         preparedStatement.close();
     }
 
-    // updateDatabase("INSERT
 
     public void updateDatabase(String sqlQuery) throws SQLException {
         System.out.println("running update data base");
@@ -95,7 +112,8 @@ public class DatabaseManager {
     public void startConnection() throws SQLException {
         try {
             // Register JDBC driver
-            Class.forName("com.mysql.jdbc.Driver");
+            // Loading class `com.mysql.jdbc.Driver'. This is deprecated. The new driver class is `com.mysql.cj.jdbc.Driver'
+            Class.forName("com.mysql.cj.jdbc.Driver");
 
             // Open a connection
             System.out.println("Connecting to database...");

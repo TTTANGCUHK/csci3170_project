@@ -5,10 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Order {
     String oid, uid, date, shippingState;
-    List<String> isbnList;
+    String isbnList;
     int quantity;
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -16,16 +17,16 @@ public class Order {
         date = dateFormat.format(new Date());
     }
 
-    public Order(String oid, String uid, List<String> isbnList) {
-        this.oid = oid;
-        this.uid = uid;
-        date = dateFormat.format(new Date());
-        this.isbnList = isbnList;
-        quantity = isbnList.size();
-        shippingState = "ordered";
-    }
+//    public Order(String oid, String uid, String isbnList) {
+//        this.oid = oid;
+//        this.uid = uid;
+//        date = dateFormat.format(new Date());
+//        this.isbnList = isbnList;
+//        quantity = isbnList.size();
+//        shippingState = "ordered";
+//    }
 
-    public Order(String oid, String uid, String date, List<String> isbnList, int quantity, String shippingState) {
+    public Order(String oid, String uid, String date, String isbnList, int quantity, String shippingState) {
         this.oid = oid;
         this.uid = uid;
         this.date = date;
@@ -36,7 +37,7 @@ public class Order {
 
     public static Order createOrder(String[] metaData) {
         return new Order(metaData[0], metaData[1], metaData[2],
-                Arrays.stream(metaData[3].split(", ")).toList(), Integer.parseInt(metaData[4]), metaData[5]);
+                metaData[3], Integer.parseInt(metaData[4]), metaData[5]);
         // String : "3-7503-0256-1, 2-0208-4796-3" -> ["3-7503-0256-1", "2-0208-4796-3"]
     }
 
@@ -53,7 +54,7 @@ public class Order {
         return date;
     }
 
-    public List<String> getIsbnList() {
+    public String getIsbnList() {
         return isbnList;
     }
 
@@ -79,7 +80,7 @@ public class Order {
         this.date = date;
     }
 
-    public void setIsbnList(ArrayList<String> isbnList) {
+    public void setIsbnList(String isbnList) {
         this.isbnList = isbnList;
     }
 

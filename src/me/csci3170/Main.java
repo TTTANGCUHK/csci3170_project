@@ -5,7 +5,6 @@ import me.csci3170.model.Customer;
 import me.csci3170.model.Order;
 
 
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -14,16 +13,15 @@ import java.util.*;
 public class Main {
     int bookRecords = 0, customerRecords = 0, orderRecords = 0;
     Scanner scanner = new Scanner(System.in);
-    static DatabaseManager databaseManager = new DatabaseManager();
+    DatabaseManager databaseManager = new DatabaseManager();
 
 
     public static void main(String[] args) throws SQLException {
 	// write your code here
         Main main = new Main();
-//        main.databaseManager.startConnection();
+        main.databaseManager.startConnection();
         int input;
         do {
-            databaseManager.startConnection();
             main.printMainMenu();
             try {
                 input = main.scanner.nextInt();
@@ -50,7 +48,7 @@ public class Main {
         System.out.println(" + Database Records: Books (" + bookRecords +
                 "), Customers (" + customerRecords +
                 "), Orders (" + orderRecords + ")");
-        System.out.println("——————————————————————————");
+        System.out.println("--------------------------");
         System.out.println("> 1. Database Initialization");
         System.out.println("> 2. Customer Operation");
         System.out.println("> 3. Bookstore Operation");
@@ -66,13 +64,16 @@ public class Main {
                 input = scanner.nextInt();
                 switch (input) {
                     case 1 -> runOption1_1();
-                    case 2 -> runOption1_2();
+                    case 2 -> {
+                        System.out.println("RUN CASE 1_2");
+                        runOption1_2();
+                    }
                     case 3 -> {
                         databaseManager.updateDatabase("DROP TABLE books");
                         databaseManager.updateDatabase("DROP TABLE orders");
                         databaseManager.updateDatabase("DROP TABLE customers");
-//                        runOption1_1();
-//                        runOption1_2();
+                        runOption1_1();
+                        runOption1_2();
                     }
                     case 4 -> {
                         return;
@@ -96,11 +97,11 @@ public class Main {
     public void runOption1_1() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         try {
 
-            String BooksSql = "CREATE TABLE Books (ISBN CHAR(13) not NULL, Title VARCHAR(100) not NULL, Authors VARCHAR(50) not NULL," +
+            String BooksSql = "CREATE TABLE " + DatabaseManager.TABLE_BOOKS + " (ISBN CHAR(13) not NULL, Title VARCHAR(100) not NULL, Authors VARCHAR(100) not NULL," +
                     "Price int NOT NULL CHECK(Price>=0), Inventory_Quantity int NOT NULL CHECK(Inventory_Quantity>=0), PRIMARY KEY(ISBN) )";
-            String CustomersSql = "CREATE TABLE Customers (UID VARCHAR(10) not NULL, Name VARCHAR(50) not NULL, Address VARCHAR(200) not NULL, PRIMARY KEY(UID) )";
-            String OrdersSql = "CREATE TABLE Orders (OID VARCHAR(8) not NULL, UID VARCHAR(10) not NULL, Order_Date DATE not NULL, " +
-                    "Order_ISBN CHAR(13) not NULL, Order_Quantity int NOT NULL CHECK(Order_Quantity>=0), Shipping_Status VARCHAR(8) not NULL, PRIMARY KEY(OID) )";
+            String CustomersSql = "CREATE TABLE " + DatabaseManager.TABLE_CUSTOMERS + " (UID VARCHAR(10) not NULL, Name VARCHAR(50) not NULL, Address VARCHAR(200) not NULL, PRIMARY KEY(UID) )";
+            String OrdersSql = "CREATE TABLE " + DatabaseManager.TABLE_ORDERS + " (OID VARCHAR(8) not NULL, UID VARCHAR(10) not NULL, Order_Date VARCHAR(10) not NULL, " +
+                    "Order_ISBN CHAR(200) not NULL, Order_Quantity int NOT NULL CHECK(Order_Quantity>=0), Shipping_Status VARCHAR(8) not NULL, PRIMARY KEY(OID) )";
 
             databaseManager.updateDatabase(BooksSql);
             databaseManager.updateDatabase(CustomersSql);
@@ -128,12 +129,13 @@ public class Main {
         databaseManager.insertDatabase(books, Book.class);
         databaseManager.insertDatabase(orders, Order.class);
         databaseManager.insertDatabase(customers, Customer.class);
+        System.out.println("Records loaded successfully.");
     }
 
     public void printOption1() {
         System.out.println("===== Database Initialization =====");
         System.out.println(" + System Date: " + new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
-        System.out.println("——————————————————————————");
+        System.out.println("--------------------------");
         System.out.println("> 1. Initialize the database");
         System.out.println("> 2. Load initial records from local files");
         System.out.println("> 3. Reset all the existing records");
@@ -264,9 +266,10 @@ public class Main {
     public void runOption2_3() throws SQLException {
         System.out.println("Please enter your name: ");
         String name = scanner.nextLine();
-        ResultSet UID = databaseManager.queryDatabase("SELECT UID FROM Customers WHERE Name = '" + name + "'"); // select all orders with this customer
+        ResultSet resultSet = databaseManager.queryDatabase("SELECT UID FROM Customers WHERE Name = '" + name + "'"); // select all orders with this customer
+        String uID = resultSet.getString("UID");
         // TODO: SQL Query
-        ResultSet resultSet = databaseManager.queryDatabase("SELECT * FROM Orders WHERE UID = '" + UID + "'"); // select all orders with this customer
+        resultSet = databaseManager.queryDatabase("SELECT * FROM Orders WHERE UID = '" + uID + "'"); // select all orders with this customer
         System.out.println(resultSet);
         // TODO: Print result
     }
@@ -274,7 +277,7 @@ public class Main {
     public void printOption2() {
         System.out.println("===== Customer Operation =====");
         System.out.println(" + System Date: " + new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
-        System.out.println("——————————————————————————");
+        System.out.println("--------------------------");
         System.out.println("> 1. Search a book"); //SQL query
         System.out.println("> 2. Place an order"); // Create order
         System.out.println("> 3. Check history orders");
@@ -352,7 +355,7 @@ public class Main {
     public void printOption3() {
         System.out.println("===== Bookstore Operation =====");
         System.out.println(" + System Date: " + new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
-        System.out.println("——————————————————————————");
+        System.out.println("--------------------------");
         System.out.println("> 1. Update an order");
         System.out.println("> 2. Query an order");
         System.out.println("> 3. Get N most popular books");

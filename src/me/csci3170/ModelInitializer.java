@@ -37,6 +37,7 @@ public class ModelInitializer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("Loaded customer records successfully");
         return customers;
     }
 
@@ -58,6 +59,7 @@ public class ModelInitializer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("Loaded order records successfully");
         return orders;
     }
 
@@ -88,7 +90,7 @@ public class ModelInitializer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        System.out.println("Loaded book records successfully");
         return books;
     }
 

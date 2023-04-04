@@ -3,11 +3,12 @@ package me.csci3170.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Book {
     static int bookCounter = 0;
     String isbn, title;
-    List<String> authors;
+    String authors;
     double price;
     int stock;
 
@@ -17,7 +18,7 @@ public class Book {
     }
 
     // Constructor with initializing the data
-    public Book(String isbn, String title, List<String> authors, double price, int stock) {
+    public Book(String isbn, String title, String authors, double price, int stock) {
         this.isbn = isbn;
         this.title = title;
         this.authors = authors;
@@ -27,7 +28,7 @@ public class Book {
     }
 
     public static Book createBook(String[] metaData) {
-        return new Book(metaData[0], metaData[1], Arrays.stream(metaData[2].split(", ")).toList()
+        return new Book(metaData[0], metaData[1], metaData[2]
                 , Double.parseDouble(metaData[3]), Integer.parseInt(metaData[4]));
     }
 
@@ -35,7 +36,7 @@ public class Book {
     public String toString() {
         return "[ISBN = " + this.isbn
                 + ", Title = " + this.title
-                + ", Authors = " + this.authors.toString()
+                + ", Authors = " + this.authors
                 + ", Price = " + this.price
                 + ", Stock = " + this.stock + "]";
     }
@@ -49,7 +50,7 @@ public class Book {
         return title;
     }
 
-    public List<String> getAuthors() {
+    public String getAuthors() {
         return authors;
     }
 
@@ -71,7 +72,7 @@ public class Book {
         this.title = title;
     }
 
-    public void setAuthors(ArrayList<String> authors) {
+    public void setAuthors(String authors) {
         this.authors = authors;
     }
 

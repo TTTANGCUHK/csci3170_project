@@ -1,4 +1,4 @@
-﻿OID,UID,Order_Date,Order_ISBN,Order Quantity,Shipping_Status
+﻿OID,UID,Order_Date,Order_ISBN,Order_Quantity,Shipping_Status
 12345678,U237R,1/15/2022,"3-7503-0256-1, 2-0208-4796-3",2,ordered
 87654321,U894T,2/20/2022,2-0208-4796-3,1,shipped
 24681357,U632E,3/10/2022,"1-4672-5821-0,7-7843-6128-7,8-1621-9987-0",3,ordered
