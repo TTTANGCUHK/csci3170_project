@@ -559,6 +559,7 @@ public class Main {
 
 //                for (int i = sortedISBN.length -1; i );
 
+
             resultSet = databaseManager.queryDatabase(query.toString()); // search book by isbn
             searchBookInfo(resultSet);
         } catch (InputMismatchException e) {
