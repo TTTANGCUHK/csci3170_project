@@ -51,6 +51,7 @@ public class DatabaseManager {
                 }
             }
             System.out.println("Upload Book Records Finished, inserted " + i + " records");
+            Main.bookRecords = i;
         } else if (tClass.isAssignableFrom(Order.class)) {
             i = 0;
             System.out.println("Uploading Order Records");
@@ -69,6 +70,7 @@ public class DatabaseManager {
                 }
             }
             System.out.println("Upload Order Records Finished, inserted " + i + " records");
+            Main.orderRecords = i;
         } else if (tClass.isAssignableFrom(Customer.class)) {
             i = 0;
             System.out.println("Uploading Customer Records");
@@ -84,6 +86,7 @@ public class DatabaseManager {
                 }
             }
             System.out.println("Upload Customer Records Finished, inserted " + i + " records");
+            Main.customerRecords = i;
         }
         System.out.println("Uploaded records to database successfully");
         preparedStatement.close();
@@ -91,10 +94,10 @@ public class DatabaseManager {
 
 
     public void updateDatabase(String sqlQuery) throws SQLException {
-        System.out.println("running update data base");
         if (getDatabase() == null){
-            System.out.println("get data base is null");
-            return;}
+            System.out.println("getDatabase is null");
+            return;
+        }
         statement = getDatabase().createStatement();
         statement.executeUpdate(sqlQuery);
 
