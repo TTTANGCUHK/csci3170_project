@@ -492,11 +492,8 @@ public class Main {
 
     public void runOption3_2() throws SQLException {
         System.out.println("Please enter the shipping status: ");
-        String shippingStatus = scanner.nextLine();
-        ResultSet resultSet = databaseManager.queryDatabase("SELECT " + DatabaseManager.ORDERS_OID + ", "
-                + DatabaseManager.CUSTOMERS_UID + ", " + DatabaseManager.ORDERS_DATE + ", "
-                + DatabaseManager.ORDERS_ISBN + ", " + DatabaseManager.ORDERS_QUANTITY
-                + "FROM" + DatabaseManager.TABLE_ORDERS
+        String shippingStatus = scanner.next();
+        ResultSet resultSet = databaseManager.queryDatabase("SELECT * FROM " + DatabaseManager.TABLE_ORDERS
                 + " WHERE " + DatabaseManager.ORDERS_SHIPPING_STATUS + " = '" + shippingStatus + "'"); // select all orders with shippingStatus
 
         printOrderInfo(resultSet);
