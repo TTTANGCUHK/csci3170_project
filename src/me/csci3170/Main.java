@@ -18,6 +18,7 @@ public class Main {
     DatabaseManager databaseManager = new DatabaseManager();
 
 
+
     public static void main(String[] args) throws SQLException {
         // write your code here
         Main main = new Main();
