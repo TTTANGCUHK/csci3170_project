@@ -14,6 +14,11 @@ public class DatabaseManager {
     String USERNAME = "root", PASSWORD = "csci3170" , DB_URL = "jdbc:mysql://localhost:3306/csci3170";
 
     public static String TABLE_BOOKS = "Books", TABLE_ORDERS = "Orders", TABLE_CUSTOMERS = "Customers";
+    public static String BOOKS_ISBN = "ISBN", BOOKS_TITLE = "Title", BOOKS_AUTHORS = "Authors"
+            , BOOKS_PRICE = "Price", BOOKS_STOCK = "Stock";
+    public static String ORDERS_OID = "OID", ORDERS_UID = "UID", ORDERS_DATE = "Order_Date"
+            , ORDERS_ISBN = "Order_ISBN", ORDERS_QUANTITY = "Order_Quantity", ORDERS_SHIPPING_STATUS = "Shipping_Status";
+    public static String CUSTOMERS_UID = "UID", CUSTOMERS_NAME = "Name", CUSTOMERS_ADDRESS = "Address";
 
     private Connection database;
     private Statement statement;

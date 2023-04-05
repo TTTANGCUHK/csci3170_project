@@ -4,8 +4,6 @@ import me.csci3170.model.Book;
 import me.csci3170.model.Customer;
 import me.csci3170.model.Order;
 
-
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -33,15 +31,17 @@ public class Main {
                     case 4 -> main.printOption4();
                     default -> System.out.println("Invalid input.");
                 }
-            } catch (InputMismatchException | SQLException e) {
+            } catch (InputMismatchException e) {
                 input = -1;
                 System.out.println("Invalid input.");
-                e.printStackTrace();
                 main.scanner.nextLine();
+            } catch (SQLException e) {
+                input = -1;
+                e.printStackTrace();
             }
 
         } while (input != 4);
-
+        main.databaseManager.closeConnection();
     }
 
     public void printMainMenu() {
@@ -50,7 +50,7 @@ public class Main {
         System.out.println(" + Database Records: Books (" + bookRecords +
                 "), Customers (" + customerRecords +
                 "), Orders (" + orderRecords + ")");
-        System.out.println("--------------------------");
+        System.out.println("------------------------------------------");
         System.out.println("> 1. Database Initialization");
         System.out.println("> 2. Customer Operation");
         System.out.println("> 3. Bookstore Operation");
@@ -58,7 +58,7 @@ public class Main {
         System.out.print(">>> Please Enter Your Query: ");
     }
 
-    public void runOption1() throws SQLException {
+    public void runOption1() {
         int input;
         do {
             printOption1();
@@ -66,17 +66,8 @@ public class Main {
                 input = scanner.nextInt();
                 switch (input) {
                     case 1 -> runOption1_1();
-                    case 2 -> {
-                        System.out.println("RUN CASE 1_2");
-                        runOption1_2();
-                    }
-                    case 3 -> {
-                        databaseManager.updateDatabase("DROP TABLE books");
-                        databaseManager.updateDatabase("DROP TABLE orders");
-                        databaseManager.updateDatabase("DROP TABLE customers");
-                        runOption1_1();
-                        runOption1_2();
-                    }
+                    case 2 -> runOption1_2();
+                    case 3 -> runOption1_3();
                     case 4 -> {
                         return;
                     }
@@ -85,11 +76,7 @@ public class Main {
             } catch (InputMismatchException | SQLException e) {
                 System.out.println("Invalid input.");
                 scanner.nextLine();
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            } catch (InstantiationException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
+            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                 throw new RuntimeException(e);
             }
 
@@ -99,15 +86,35 @@ public class Main {
     public void runOption1_1() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         try {
 
-            String BooksSql = "CREATE TABLE " + DatabaseManager.TABLE_BOOKS + " (ISBN CHAR(13) not NULL, Title VARCHAR(100) not NULL, Authors VARCHAR(100) not NULL," +
-                    "Price int NOT NULL CHECK(Price>=0), Inventory_Quantity int NOT NULL CHECK(Inventory_Quantity>=0), PRIMARY KEY(ISBN) )";
-            String CustomersSql = "CREATE TABLE " + DatabaseManager.TABLE_CUSTOMERS + " (UID VARCHAR(10) not NULL, Name VARCHAR(50) not NULL, Address VARCHAR(200) not NULL, PRIMARY KEY(UID) )";
-            String OrdersSql = "CREATE TABLE " + DatabaseManager.TABLE_ORDERS + " (OID VARCHAR(8) not NULL, UID VARCHAR(10) not NULL, Order_Date VARCHAR(10) not NULL, " +
-                    "Order_ISBN CHAR(200) not NULL, Order_Quantity int NOT NULL CHECK(Order_Quantity>=0), Shipping_Status VARCHAR(8) not NULL, PRIMARY KEY(OID) )";
+            String booksSQL = "CREATE TABLE " + DatabaseManager.TABLE_BOOKS + " (" +
+                    DatabaseManager.BOOKS_ISBN + " CHAR(13) not NULL, " +
+                    DatabaseManager.BOOKS_TITLE + " VARCHAR(100) not NULL, " +
+                    DatabaseManager.BOOKS_AUTHORS + " VARCHAR(100) not NULL, " +
+                    DatabaseManager.BOOKS_PRICE + " int NOT NULL CHECK(" +
+                    DatabaseManager.BOOKS_PRICE + ">=0), " +
+                    DatabaseManager.BOOKS_STOCK + " int NOT NULL CHECK(" +
+                    DatabaseManager.BOOKS_STOCK + ">=0), " +
+                    "PRIMARY KEY(" + DatabaseManager.BOOKS_ISBN + ") )";
 
-            databaseManager.updateDatabase(BooksSql);
-            databaseManager.updateDatabase(CustomersSql);
-            databaseManager.updateDatabase(OrdersSql);//CREATE TABLES
+            String ordersSQL = "CREATE TABLE " + DatabaseManager.TABLE_ORDERS + " (" +
+                    DatabaseManager.ORDERS_OID + " VARCHAR(8) not NULL, " +
+                    DatabaseManager.ORDERS_UID + " VARCHAR(10) not NULL, " +
+                    DatabaseManager.ORDERS_DATE + " VARCHAR(10) not NULL, " +
+                    DatabaseManager.ORDERS_ISBN + " CHAR(200) not NULL, " +
+                    DatabaseManager.ORDERS_QUANTITY + " int NOT NULL CHECK(" +
+                    DatabaseManager.ORDERS_QUANTITY + ">=0), " +
+                    DatabaseManager.ORDERS_SHIPPING_STATUS + " VARCHAR(8) not NULL, " +
+                    "PRIMARY KEY(" + DatabaseManager.ORDERS_OID + ") )";
+
+            String customersSQL = "CREATE TABLE " + DatabaseManager.TABLE_CUSTOMERS + " ("
+                    + DatabaseManager.CUSTOMERS_UID + " VARCHAR(10) not NULL, "
+                    + DatabaseManager.CUSTOMERS_NAME + " VARCHAR(50) not NULL, "
+                    + DatabaseManager.CUSTOMERS_ADDRESS + " VARCHAR(200) not NULL, "
+                    + "PRIMARY KEY(" + DatabaseManager.CUSTOMERS_UID + ") )";
+
+            databaseManager.updateDatabase(booksSQL);
+            databaseManager.updateDatabase(customersSQL);
+            databaseManager.updateDatabase(ordersSQL);//CREATE TABLES
             System.out.println("Tables created successfully...");
 
 
@@ -134,10 +141,18 @@ public class Main {
         System.out.println("Records loaded successfully.");
     }
 
+    public void runOption1_3() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        databaseManager.updateDatabase("DROP TABLE " + DatabaseManager.TABLE_BOOKS);
+        databaseManager.updateDatabase("DROP TABLE " + DatabaseManager.TABLE_ORDERS);
+        databaseManager.updateDatabase("DROP TABLE " + DatabaseManager.TABLE_CUSTOMERS);
+        runOption1_1();
+        runOption1_2();
+    }
+
     public void printOption1() {
         System.out.println("===== Database Initialization =====");
         System.out.println(" + System Date: " + new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
-        System.out.println("--------------------------");
+        System.out.println("------------------------------------------");
         System.out.println("> 1. Initialize the database");
         System.out.println("> 2. Load initial records from local files");
         System.out.println("> 3. Reset all the existing records");
@@ -163,6 +178,8 @@ public class Main {
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input.");
                 scanner.nextLine();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         } while (true);
     }
@@ -182,88 +199,23 @@ public class Main {
 
                 switch (input) {
                     case 1 -> {
-                        // TODO: SQL Query
-                        resultSet = databaseManager.queryDatabase("SELECT * FROM Books WHERE ISBN = \"" + info + "\"");
-                        Boolean notFound = true;
-                        do {
-                            if (resultSet.next()){
-                                notFound = false;
-                                String ISBN = resultSet.getString("ISBN");
-                                String Title = resultSet.getString("Title");
-                                String Authors = resultSet.getString("Authors");
-                                int Price = resultSet.getInt("Price");
-                                int InventoryQuantity = resultSet.getInt("Inventory_Quantity");
-                                System.out.println("--------------------------");
-                                System.out.println("ISBN: " + ISBN);
-                                System.out.println("Title: " + Title);
-                                System.out.println("Authors: " + Authors);
-                                System.out.println("Price: " + Price);
-                                System.out.println("Inventory Quantity: " + InventoryQuantity);
-                                System.out.println("--------------------------");
-                            }
-                            else if(notFound){
-                                System.out.println("No Book is found");
-                            }
-                        }
-                        while (resultSet.next());
+                        resultSet = databaseManager.queryDatabase("SELECT * FROM " + DatabaseManager.TABLE_BOOKS
+                                + " WHERE " + DatabaseManager.BOOKS_ISBN + " = \"" + info + "\"");
+                        searchBookInfo(resultSet);
                         return;
                     }
                     case 2 -> {
-                        // TODO: SQL Query
                         System.out.println("searching with title");
-                        resultSet = databaseManager.queryDatabase("SELECT * FROM Books WHERE Title LIKE \"%" + info +"%\"");
-                        Boolean notFound = true;
-                        do {
-                            if (resultSet.next()){
-                                notFound = false;
-                                String ISBN = resultSet.getString("ISBN");
-                                String Title = resultSet.getString("Title");
-                                String Authors = resultSet.getString("Authors");
-                                int Price = resultSet.getInt("Price");
-                                int InventoryQuantity = resultSet.getInt("Inventory_Quantity");
-                                System.out.println("--------------------------");
-                                System.out.println("ISBN: " + ISBN);
-                                System.out.println("Title: " + Title);
-                                System.out.println("Authors: " + Authors);
-                                System.out.println("Price: " + Price);
-                                System.out.println("Inventory Quantity: " + InventoryQuantity);
-                                System.out.println("--------------------------");
-                            }
-                            else if(notFound){
-                                System.out.println("No Book is found");
-                            }
-                        }
-                        while (resultSet.next());
+                        resultSet = databaseManager.queryDatabase("SELECT * FROM " + DatabaseManager.TABLE_BOOKS
+                                + " WHERE " + DatabaseManager.BOOKS_TITLE + " LIKE \"%" + info +"%\"");
+                        searchBookInfo(resultSet);
                         return;
                     }
                     case 3 -> {
-                        // TODO: SQL Query
                         // Caution: Author is an array and info is a string for one author
-
-                        resultSet = databaseManager.queryDatabase("SELECT * FROM Books WHERE Authors LIKE \"%" + info +"%\"");
-                        Boolean notFound = true;
-                        do {
-                            if (resultSet.next()){
-                                notFound = false;
-                                String ISBN = resultSet.getString("ISBN");
-                                String Title = resultSet.getString("Title");
-                                String Authors = resultSet.getString("Authors");
-                                int Price = resultSet.getInt("Price");
-                                int InventoryQuantity = resultSet.getInt("Inventory_Quantity");
-                                System.out.println("--------------------------");
-                                System.out.println("ISBN: " + ISBN);
-                                System.out.println("Title: " + Title);
-                                System.out.println("Authors: " + Authors);
-                                System.out.println("Price: " + Price);
-                                System.out.println("Inventory Quantity: " + InventoryQuantity);
-                                System.out.println("--------------------------");
-                            }
-                            else if(notFound){
-                                System.out.println("No Book is found");
-                            }
-                        }
-                        while (resultSet.next());
-
+                        resultSet = databaseManager.queryDatabase("SELECT * FROM " + DatabaseManager.TABLE_BOOKS
+                                + " WHERE " + DatabaseManager.BOOKS_AUTHORS + " LIKE \"%" + info +"%\"");
+                        searchBookInfo(resultSet);
                         System.out.println(resultSet);
                         return;
                     }
@@ -273,8 +225,6 @@ public class Main {
                     default -> System.out.println("Invalid input.");
                 }
 
-                // TODO: Print resultSet with format
-
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input.");
                 scanner.nextLine();
@@ -283,10 +233,39 @@ public class Main {
         } while (true);
     }
 
+    public void searchBookInfo(ResultSet resultSet) throws SQLException {
+        boolean notFound = true;
+        do {
+            if (resultSet.next()){
+                notFound = false;
+                String ISBN = resultSet.getString(DatabaseManager.BOOKS_ISBN);
+                String Title = resultSet.getString(DatabaseManager.BOOKS_TITLE);
+                String Authors = resultSet.getString(DatabaseManager.BOOKS_AUTHORS);
+                int Price = resultSet.getInt(DatabaseManager.BOOKS_PRICE);
+                int Stock = resultSet.getInt(DatabaseManager.BOOKS_STOCK);
+                System.out.println("----------- Book Information -----------");
+                System.out.println(DatabaseManager.BOOKS_ISBN + ": " + ISBN);
+                System.out.println(DatabaseManager.BOOKS_TITLE + ": " + Title);
+                System.out.println(DatabaseManager.BOOKS_AUTHORS + ": " + Authors);
+                System.out.println(DatabaseManager.BOOKS_PRICE + ": " + Price);
+                System.out.println(DatabaseManager.BOOKS_STOCK + ": " + Stock);
+                System.out.println("------------------------------------------");
+            }
+            else if(notFound){
+                System.out.println("No Book is found");
+            }
+        }
+        while (resultSet.next());
+    }
+
     // TODO: SQL Query
     public boolean checkStock(String ISBN) throws SQLException {
-        ResultSet resultSet = databaseManager.queryDatabase("SELECT * FROM Books WHERE ISBN = \"" + ISBN + "\"");
-        int stock = resultSet.getInt("Inventory_Quantity");
+        ResultSet resultSet = databaseManager.queryDatabase("SELECT * FROM " + DatabaseManager.TABLE_BOOKS
+                + " WHERE " + DatabaseManager.BOOKS_ISBN + " = \"" + ISBN + "\"");
+        int stock = 0;
+        if (resultSet.next()) {
+            stock = resultSet.getInt(DatabaseManager.BOOKS_STOCK);
+        }
         return stock > 0;
     }
 
@@ -329,31 +308,35 @@ public class Main {
     public void runOption2_3() throws SQLException {
         System.out.println("Please enter your name: ");
         String name = scanner.next();
-        ResultSet resultSet = databaseManager.queryDatabase("SELECT UID FROM Customers WHERE Name = '" + name + "'"); // select all orders with this customer
+
+        ResultSet resultSet = databaseManager.queryDatabase("SELECT " + DatabaseManager.CUSTOMERS_UID
+                + " FROM " + DatabaseManager.TABLE_CUSTOMERS + " WHERE " + DatabaseManager.CUSTOMERS_NAME + " = '" + name + "'"); // select all orders with this customer
         resultSet.next();
-        String uID = resultSet.getString("UID");
-        // TODO: SQL Query
-        resultSet = databaseManager.queryDatabase("SELECT * FROM Orders WHERE UID = '" + uID + "'"); // select all orders with this customer
+        String uID = resultSet.getString(DatabaseManager.CUSTOMERS_UID);
+
+        resultSet = databaseManager.queryDatabase("SELECT * FROM " + DatabaseManager.TABLE_ORDERS
+                + " WHERE " +  DatabaseManager.ORDERS_UID + " = '" + uID + "'"); // select all orders with this customer
+
         while (resultSet.next()) {
-            String orderOID = resultSet.getString("OID");
-            String orderISBN = resultSet.getString("Order_ISBN");
-            int orderQuantity = resultSet.getInt("Order_Quantity");
-            String shippingStatus = resultSet.getString("Shipping_Status");
-            Date orderDate = resultSet.getDate("Order_Date");
-            System.out.println("Order ID: " + orderOID);
-            System.out.println("ISBN: " + orderISBN);
-            System.out.println("Quantity: " + orderQuantity);
-            System.out.println("Shipping Status: " + shippingStatus);
-            System.out.println("Order Date: " + orderDate);
-            System.out.println("-----------------------");
+            String orderOID = resultSet.getString(DatabaseManager.ORDERS_OID);
+            String orderISBN = resultSet.getString(DatabaseManager.ORDERS_ISBN);
+            int orderQuantity = resultSet.getInt(DatabaseManager.ORDERS_QUANTITY);
+            String shippingStatus = resultSet.getString(DatabaseManager.ORDERS_SHIPPING_STATUS);
+            String orderDate = resultSet.getString(DatabaseManager.ORDERS_DATE);
+            System.out.println("------------- Order History -------------");
+            System.out.println(DatabaseManager.ORDERS_OID + ": " + orderOID);
+            System.out.println(DatabaseManager.ORDERS_ISBN + ": " + orderISBN);
+            System.out.println(DatabaseManager.ORDERS_QUANTITY + ": " + orderQuantity);
+            System.out.println(DatabaseManager.ORDERS_SHIPPING_STATUS + ": " + shippingStatus);
+            System.out.println(DatabaseManager.ORDERS_DATE + ": " + orderDate);
+            System.out.println("------------------------------------------");
         }
-        // TODO: Print result
     }
 
     public void printOption2() {
         System.out.println("===== Customer Operation =====");
         System.out.println(" + System Date: " + new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
-        System.out.println("--------------------------");
+        System.out.println("------------------------------------------");
         System.out.println("> 1. Search a book"); //SQL query
         System.out.println("> 2. Place an order"); // Create order
         System.out.println("> 3. Check history orders");
@@ -379,6 +362,8 @@ public class Main {
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input.");
                 scanner.nextLine();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         } while (true);
     }
@@ -386,18 +371,21 @@ public class Main {
     public void runOption3_1() throws SQLException {
         System.out.println("Please enter the order ID to be updated: ");
         String orderID = scanner.next();
-        // TODO: SQL Query
-        ResultSet resultSet = databaseManager.queryDatabase("SELECT Shipping_Status FROM Orders WHERE OID = '" + orderID + "'"); // Get the shipping status first
+
+        ResultSet resultSet = databaseManager.queryDatabase("SELECT " + DatabaseManager.ORDERS_SHIPPING_STATUS
+                + " FROM " + DatabaseManager.TABLE_ORDERS + " WHERE " + DatabaseManager.ORDERS_OID + " = '" + orderID + "'"); // Get the shipping status first
         resultSet.next();
-        String shippingStatus = resultSet.getString("Shipping_Status");
+
+        String shippingStatus = resultSet.getString(DatabaseManager.ORDERS_SHIPPING_STATUS);
         if (shippingStatus.contentEquals("shipped")) {
             System.out.println("Update failed! This order is already shipped.");
             return;
         }
-        // TODO: SQL Query
-        databaseManager.updateDatabase("UPDATE Orders SET Shipping_Status = 'shipped' WHERE OID = '" + orderID + "'"); // Update the shipping status of the order (from ordered to shipped)
+
+        databaseManager.updateDatabase("UPDATE " + DatabaseManager.TABLE_ORDERS + " SET "
+                + DatabaseManager.ORDERS_SHIPPING_STATUS + " = 'shipped' WHERE "
+                + DatabaseManager.ORDERS_OID + " = '" + orderID + "'"); // Update the shipping status of the order (from ordered to shipped)
         System.out.println("Update success! This order is shipped.");
-        // TODO: Print result
     }
 
     public void runOption3_2() throws SQLException {
