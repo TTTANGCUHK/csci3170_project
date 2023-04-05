@@ -289,12 +289,22 @@ public class Main {
         return oID;
     }
 
-    public void generateCustomer(String uID) throws SQLException {
-        System.out.println("UID does not exist, creating a new account...");
-        System.out.println("Please enter your name: ");
-        String name = scanner.nextLine();
-        System.out.println("Please enter your address: ");
-        String address = scanner.nextLine();
+    public String generateUID() throws SQLException {
+        StringBuilder uID = new StringBuilder("U");
+        Random random = new Random();
+        do {
+            uID.append(random.nextInt(999));
+            uID.append(Character.toString((char) 64 + random.nextInt(26)));
+            ResultSet resultSet = databaseManager.queryDatabase("SELECT " + DatabaseManager.CUSTOMERS_UID
+                    + " FROM " + DatabaseManager.TABLE_CUSTOMERS
+                    + " WHERE " + DatabaseManager.CUSTOMERS_UID + " = '" + uID + "'");
+            if (!resultSet.next())
+                break;
+        } while (true);
+        return uID.toString();
+    }
+
+    public void generateCustomer(String uID, String name, String address) throws SQLException {
         PreparedStatement preparedStatement = databaseManager.getDatabase().prepareStatement("INSERT INTO " + DatabaseManager.TABLE_CUSTOMERS + " VALUES (?, ?, ?)");
         preparedStatement.setString(1, uID);
         preparedStatement.setString(2, name);
@@ -315,7 +325,12 @@ public class Main {
             if (resultSet.getString(DatabaseManager.CUSTOMERS_UID).equals(uID))
                 uID = resultSet.getString(DatabaseManager.CUSTOMERS_UID);
         } else {
-            generateCustomer(uID);
+            System.out.println("UID does not exist, creating a new account...");
+            System.out.println("Please enter your name: ");
+            String name = scanner.nextLine();
+            System.out.println("Please enter your address: ");
+            String address = scanner.nextLine();
+            generateCustomer(uID, name, address);
         }
         StringBuilder isbns = new StringBuilder("\"");
         for (String isbn : listISBN) {
@@ -379,11 +394,17 @@ public class Main {
 
     public void runOption2_3() throws SQLException {
         System.out.println("Please enter your name: ");
-        String name = scanner.next();
+        String name = scanner.nextLine();
 
         ResultSet resultSet = databaseManager.queryDatabase("SELECT " + DatabaseManager.CUSTOMERS_UID
                 + " FROM " + DatabaseManager.TABLE_CUSTOMERS + " WHERE " + DatabaseManager.CUSTOMERS_NAME + " = '" + name + "'"); // select all orders with this customer
-        resultSet.next();
+        if (!resultSet.next()) {
+            System.out.println("Account does not exist, creating a new one..");
+            System.out.println("Please enter your address: ");
+            String address = scanner.nextLine();
+            generateCustomer(generateUID(), name, address);
+            return;
+        }
         String uID = resultSet.getString(DatabaseManager.CUSTOMERS_UID);
 
         resultSet = databaseManager.queryDatabase("SELECT * FROM " + DatabaseManager.TABLE_ORDERS
@@ -474,8 +495,12 @@ public class Main {
             int input = scanner.nextInt();
 
             // TODO: SQL Query
-            ResultSet resultSet = databaseManager.queryDatabase(""); // use count ISBN in order? Then get the first N ISBN
-            String[] isbnList = (String[]) resultSet.getArray("").getArray();
+            ResultSet resultSet = databaseManager.queryDatabase("SELECT" + DatabaseManager.ORDERS_ISBN +
+                    " FROM " + DatabaseManager.TABLE_ORDERS); // use count ISBN in order? Then get the first N ISBN
+            ArrayList<String> isbnList = new ArrayList<>();
+            while (resultSet.next()) {
+                isbnList.add(resultSet.getString(DatabaseManager.BOOKS_ISBN));
+            }
 
             for (String isbn : isbnList) {
                 // TODO: SQL Query
