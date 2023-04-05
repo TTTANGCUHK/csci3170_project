@@ -478,7 +478,7 @@ public class Main {
 
     public void runOption3_1() throws SQLException {
         System.out.println("Please enter the order ID to be updated: ");
-        String orderID = scanner.next();
+        String orderID = scanner.nextLine();
 
         ResultSet resultSet = databaseManager.queryDatabase("SELECT " + DatabaseManager.ORDERS_SHIPPING_STATUS
                 + " FROM " + DatabaseManager.TABLE_ORDERS + " WHERE " + DatabaseManager.ORDERS_OID + " = '" + orderID + "'"); // Get the shipping status first
