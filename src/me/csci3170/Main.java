@@ -27,6 +27,7 @@ public class Main {
             main.printMainMenu();
             try {
                 input = main.scanner.nextInt();
+                main.scanner.nextLine();
                 switch (input) {
                     case 1 -> main.runOption1();
                     case 2 -> main.runOption2();
@@ -67,6 +68,7 @@ public class Main {
             printOption1();
             try {
                 input = scanner.nextInt();
+                scanner.nextLine();
                 switch (input) {
                     case 1 -> runOption1_1();
                     case 2 -> runOption1_2();
@@ -169,6 +171,7 @@ public class Main {
             printOption2();
             try {
                 input = scanner.nextInt();
+                scanner.nextLine();
                 switch (input) {
                     case 1 -> runOption2_1();
                     case 2 -> runOption2_2();
@@ -418,11 +421,16 @@ public class Main {
         ResultSet resultSet = databaseManager.queryDatabase("SELECT " + DatabaseManager.CUSTOMERS_UID
                 + " FROM " + DatabaseManager.TABLE_CUSTOMERS + " WHERE " + DatabaseManager.CUSTOMERS_NAME + " = '" + name + "'"); // select all orders with this customer
         if (!resultSet.next()) {
-            System.out.println("Account does not exist, creating a new one..");
-            System.out.println("Please enter your address: ");
-            String address = scanner.nextLine();
-            generateCustomer(generateUID(), name, address);
-            return;
+            System.out.println("Account does not exist. Creating a new account? (Y/N)");
+            String input = scanner.nextLine();
+            if (input.equalsIgnoreCase("Y")) {
+                System.out.println("Please enter your address: ");
+                String address = scanner.nextLine();
+                generateCustomer(generateUID(), name, address);
+            } else if (input.equalsIgnoreCase("N")) {
+                runOption2_3();
+                return;
+            }
         }
         String uID = resultSet.getString(DatabaseManager.CUSTOMERS_UID);
 
@@ -449,6 +457,7 @@ public class Main {
             printOption3();
             try {
                 input = scanner.nextInt();
+                scanner.nextLine();
                 switch (input) {
                     case 1 -> runOption3_1();
                     case 2 -> runOption3_2();
@@ -506,39 +515,55 @@ public class Main {
         try {
             System.out.println("Enter number of N: ");
             int input = scanner.nextInt();
+            scanner.nextLine();
 
-            // TODO: SQL Query
-            ResultSet resultSet = databaseManager.queryDatabase("SELECT" + DatabaseManager.ORDERS_ISBN +
+            ResultSet resultSet = databaseManager.queryDatabase("SELECT " + DatabaseManager.ORDERS_ISBN +
                     " FROM " + DatabaseManager.TABLE_ORDERS); // use count ISBN in order? Then get the first N ISBN
             ArrayList<String> isbnList = new ArrayList<>();
             while (resultSet.next()) {
-                isbnList.add(resultSet.getString(DatabaseManager.BOOKS_ISBN));
+                isbnList.add(resultSet.getString(DatabaseManager.ORDERS_ISBN));
             }
             ArrayList<String> recordISBN = new ArrayList<>();
             for (String isbn : isbnList) {
-                // TODO: SQL Query
                 isbn = isbn.replace("\"", "");
                 String[] sep_ISBN = isbn.split(",");
                 //store separated book ISBN into a list
                 recordISBN.addAll(Arrays.asList(sep_ISBN));
+            }
 
-                //store book ISBNs as keys, corresponding occurrences as values
-                Map<String, Long> distinctISBN = recordISBN.stream().collect(
-                        Collectors.groupingBy(Function.identity(), Collectors.counting()));
+            //store book ISBNs as keys, corresponding occurrences as values
+            Map<String, Long> distinctISBN = recordISBN.stream().collect(
+                    Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-                //sort the map in desc order according to occurrences
-                Map<String, Long> DESC_ISBN = new LinkedHashMap<>();
-                distinctISBN.entrySet().stream().sorted(Map.Entry.<String, Long>comparingByValue()
-                        .reversed()).forEachOrdered(e -> DESC_ISBN.put(e.getKey(), e.getValue()));
+            //sort the map in desc order according to occurrences
+            Map<String, Long> DESC_ISBN = new LinkedHashMap<>();
+            distinctISBN.entrySet().stream().sorted(Map.Entry.<String, Long>comparingByValue()
+                    .reversed()).forEachOrdered(e -> DESC_ISBN.put(e.getKey(), e.getValue()));
 
-                String sortedISBN[] = DESC_ISBN.keySet().toArray(new String[0]);
-                String[] N_P_ISBN= new String[sortedISBN.length];
+            List<String> newISBN = DESC_ISBN.keySet().stream().toList();
+
+            StringBuilder query = new StringBuilder("SELECT * FROM " + DatabaseManager.TABLE_BOOKS
+                    + " WHERE " + DatabaseManager.BOOKS_ISBN
+                    + " IN (");
+            if (newISBN.size() >= input) {
+                for (int i = 0; i < input; i++) {
+                    query.append("\"").append(newISBN.get(i)).append("\",");
+                }
+                query.replace(query.lastIndexOf(","), query.length(), ")");
+            } else {
+                for (String isbn : newISBN) {
+                    query.append("\"").append(isbn).append("\",");
+                }
+                query.replace(query.lastIndexOf(","), query.length(), ")");
+            }
+
+//            String sortedISBN[] = DESC_ISBN.keySet().toArray(new String[0]);
+//            String[] N_P_ISBN= new String[sortedISBN.length];
 
 //                for (int i = sortedISBN.length -1; i );
 
-                resultSet = databaseManager.queryDatabase(""); // search book by isbn
-                // TODO: Print the book info same as option2_1
-            }
+            resultSet = databaseManager.queryDatabase(query.toString()); // search book by isbn
+            searchBookInfo(resultSet);
         } catch (InputMismatchException e) {
             System.out.println("Invalid input.");
             scanner.nextLine();
