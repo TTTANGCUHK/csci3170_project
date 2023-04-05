@@ -4,13 +4,14 @@ import me.csci3170.model.Book;
 import me.csci3170.model.Customer;
 import me.csci3170.model.Order;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Main {
-    int bookRecords = 0, customerRecords = 0, orderRecords = 0;
+    static int bookRecords = 0, customerRecords = 0, orderRecords = 0;
     Scanner scanner = new Scanner(System.in);
     DatabaseManager databaseManager = new DatabaseManager();
 
@@ -193,9 +194,10 @@ public class Main {
 
             try {
                 int input = scanner.nextInt();
+                scanner.nextLine();
                 ResultSet resultSet;
                 System.out.println("Please enter the info: ");
-                String info = scanner.next();
+                String info = scanner.nextLine();
 
                 switch (input) {
                     case 1 -> {
@@ -216,7 +218,6 @@ public class Main {
                         resultSet = databaseManager.queryDatabase("SELECT * FROM " + DatabaseManager.TABLE_BOOKS
                                 + " WHERE " + DatabaseManager.BOOKS_AUTHORS + " LIKE \"%" + info +"%\"");
                         searchBookInfo(resultSet);
-                        System.out.println(resultSet);
                         return;
                     }
                     case 4 -> {
@@ -235,46 +236,114 @@ public class Main {
 
     public void searchBookInfo(ResultSet resultSet) throws SQLException {
         boolean notFound = true;
-        do {
-            if (resultSet.next()){
-                notFound = false;
-                String ISBN = resultSet.getString(DatabaseManager.BOOKS_ISBN);
-                String Title = resultSet.getString(DatabaseManager.BOOKS_TITLE);
-                String Authors = resultSet.getString(DatabaseManager.BOOKS_AUTHORS);
-                int Price = resultSet.getInt(DatabaseManager.BOOKS_PRICE);
-                int Stock = resultSet.getInt(DatabaseManager.BOOKS_STOCK);
-                System.out.println("----------- Book Information -----------");
-                System.out.println(DatabaseManager.BOOKS_ISBN + ": " + ISBN);
-                System.out.println(DatabaseManager.BOOKS_TITLE + ": " + Title);
-                System.out.println(DatabaseManager.BOOKS_AUTHORS + ": " + Authors);
-                System.out.println(DatabaseManager.BOOKS_PRICE + ": " + Price);
-                System.out.println(DatabaseManager.BOOKS_STOCK + ": " + Stock);
-                System.out.println("------------------------------------------");
-            }
-            else if(notFound){
-                System.out.println("No Book is found");
-            }
+        while (resultSet.next()) {
+            notFound = false;
+            String ISBN = resultSet.getString(DatabaseManager.BOOKS_ISBN);
+            String Title = resultSet.getString(DatabaseManager.BOOKS_TITLE);
+            String Authors = resultSet.getString(DatabaseManager.BOOKS_AUTHORS);
+            int Price = resultSet.getInt(DatabaseManager.BOOKS_PRICE);
+            int Stock = resultSet.getInt(DatabaseManager.BOOKS_STOCK);
+            System.out.println("----------- Book Information -----------");
+            System.out.println(DatabaseManager.BOOKS_ISBN + ": " + ISBN);
+            System.out.println(DatabaseManager.BOOKS_TITLE + ": " + Title);
+            System.out.println(DatabaseManager.BOOKS_AUTHORS + ": " + Authors);
+            System.out.println(DatabaseManager.BOOKS_PRICE + ": " + Price);
+            System.out.println(DatabaseManager.BOOKS_STOCK + ": " + Stock);
+            System.out.println("------------------------------------------");
         }
-        while (resultSet.next());
+        if(notFound){
+            System.out.println("No Book is found");
+        }
     }
 
-    // TODO: SQL Query
-    public boolean checkStock(String ISBN) throws SQLException {
+    public boolean checkStock(String ISBN, List<Integer> stockList) throws SQLException {
         ResultSet resultSet = databaseManager.queryDatabase("SELECT * FROM " + DatabaseManager.TABLE_BOOKS
                 + " WHERE " + DatabaseManager.BOOKS_ISBN + " = \"" + ISBN + "\"");
         int stock = 0;
         if (resultSet.next()) {
             stock = resultSet.getInt(DatabaseManager.BOOKS_STOCK);
+            stockList.add(stock);
         }
         return stock > 0;
     }
 
+    public void updateStock(List<String> listISBN, List<Integer> listStock) throws SQLException {
+        for (int i = 0; i < listISBN.size(); i++) {
+            databaseManager.updateDatabase("UPDATE " + DatabaseManager.TABLE_BOOKS + " SET "
+                    + DatabaseManager.BOOKS_STOCK + " = " + (listStock.get(i) - 1) + " WHERE "
+                    + DatabaseManager.BOOKS_ISBN + " = '" + listISBN.get(i) + "'");
+        }
+    }
+
+    public int generateOID() throws SQLException {
+        int oID;
+        Random random = new Random();
+        do {
+            oID = random.nextInt(99999999);
+            ResultSet resultSet = databaseManager.queryDatabase("SELECT " + DatabaseManager.ORDERS_OID
+                    + " FROM " + DatabaseManager.TABLE_ORDERS + " WHERE " + DatabaseManager.ORDERS_OID + " = '" + oID + "'");
+            if (!resultSet.next())
+                break;
+
+        } while (true);
+        return oID;
+    }
+
+    public void generateCustomer(String uID) throws SQLException {
+        System.out.println("UID does not exist, creating a new account...");
+        System.out.println("Please enter your name: ");
+        String name = scanner.nextLine();
+        System.out.println("Please enter your address: ");
+        String address = scanner.nextLine();
+        PreparedStatement preparedStatement = databaseManager.getDatabase().prepareStatement("INSERT INTO " + DatabaseManager.TABLE_CUSTOMERS + " VALUES (?, ?, ?)");
+        preparedStatement.setString(1, uID);
+        preparedStatement.setString(2, name);
+        preparedStatement.setString(3, address);
+        preparedStatement.executeUpdate();
+        System.out.println("Account created successfully");
+        customerRecords++;
+    }
+
+    public void placeOrder(List<String> listISBN) throws SQLException {
+        int oID = generateOID();
+        System.out.println("Please enter your UID: ");
+        String uID = scanner.nextLine();
+        ResultSet resultSet = databaseManager.queryDatabase("SELECT " + DatabaseManager.CUSTOMERS_UID
+                + " FROM " + DatabaseManager.TABLE_CUSTOMERS
+                + " WHERE " + DatabaseManager.CUSTOMERS_UID + " = '" + uID + "'");
+        if (resultSet.next()) {
+            if (resultSet.getString(DatabaseManager.CUSTOMERS_UID).equals(uID))
+                uID = resultSet.getString(DatabaseManager.CUSTOMERS_UID);
+        } else {
+            generateCustomer(uID);
+        }
+        StringBuilder isbns = new StringBuilder("\"");
+        for (String isbn : listISBN) {
+            isbns.append(isbn).append(",");
+        }
+        isbns.replace(isbns.lastIndexOf(","), isbns.length(), "\"");
+
+        PreparedStatement preparedStatement = databaseManager.getDatabase().prepareStatement("INSERT INTO "
+                + DatabaseManager.TABLE_ORDERS + " VALUES (?, ?, ?, ?, ?, ?)");
+        preparedStatement.setString(1, Integer.toString(oID));
+        preparedStatement.setString(2, uID);
+        preparedStatement.setString(3, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        preparedStatement.setString(4, isbns.toString());
+        preparedStatement.setInt(5, listISBN.size());
+        preparedStatement.setString(6, "ordered");
+        preparedStatement.executeUpdate();
+        orderRecords++;
+    }
+
     public void runOption2_2() throws SQLException {
+        List<String> listISBN = new ArrayList<>();
+        List<Integer> listStock = new ArrayList<>();
         do {
             boolean flag;
             System.out.println("Please enter the number of book to be ordered: ");
             try {
                 int input = scanner.nextInt();
+                scanner.nextLine();
                 if (input <= 0) {
                     System.out.println("Invalid input.");
                     scanner.nextLine();
@@ -282,9 +351,10 @@ public class Main {
                 }
                 flag = true;
                 for (int i = 0; i < input; i++) {
-                    System.out.println("Please enter the ISBN of the book: ");
+                    System.out.println("Please enter the ISBN of the book (" + (i + 1) + "/" + input + "): ");
                     String isbn = scanner.nextLine();
-                    if (!checkStock(isbn)) {
+                    listISBN.add(isbn);
+                    if (!checkStock(isbn, listStock)) {
                         System.out.println("Sorry, this book is out of stock.");
                         flag = false;
                         break;
@@ -294,6 +364,8 @@ public class Main {
                     System.out.println("Sorry, the order is failed because some book is out of stock.");
 
                 } else {
+                    updateStock(listISBN, listStock);
+                    placeOrder(listISBN);
                     System.out.println("Thank you! The order is placed successfully.");
                     break;
                 }
@@ -377,7 +449,7 @@ public class Main {
         resultSet.next();
 
         String shippingStatus = resultSet.getString(DatabaseManager.ORDERS_SHIPPING_STATUS);
-        if (shippingStatus.contentEquals("shipped")) {
+        if (shippingStatus.contentEquals("shipped") || shippingStatus.contentEquals("received")) {
             System.out.println("Update failed! This order is already shipped.");
             return;
         }
