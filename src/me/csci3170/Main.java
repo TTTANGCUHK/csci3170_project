@@ -473,7 +473,10 @@ public class Main {
 
         ResultSet resultSet = databaseManager.queryDatabase("SELECT " + DatabaseManager.ORDERS_SHIPPING_STATUS
                 + " FROM " + DatabaseManager.TABLE_ORDERS + " WHERE " + DatabaseManager.ORDERS_OID + " = '" + orderID + "'"); // Get the shipping status first
-        resultSet.next();
+        if(!resultSet.next()){
+            System.out.println("This order does not exist.");
+            return;
+        }
 
         String shippingStatus = resultSet.getString(DatabaseManager.ORDERS_SHIPPING_STATUS);
         if (shippingStatus.contentEquals("shipped") || shippingStatus.contentEquals("received")) {
