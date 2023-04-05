@@ -9,9 +9,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Main {
-    static int bookRecords = 0, customerRecords = 0, orderRecords = 0;
+    public static int bookRecords = 0, customerRecords = 0, orderRecords = 0;
     Scanner scanner = new Scanner(System.in);
     DatabaseManager databaseManager = new DatabaseManager();
 
@@ -392,6 +394,23 @@ public class Main {
         } while (true);
     }
 
+    public void printOrderInfo(ResultSet resultSet) throws SQLException {
+        while (resultSet.next()) {
+            String orderOID = resultSet.getString(DatabaseManager.ORDERS_OID);
+            String orderISBN = resultSet.getString(DatabaseManager.ORDERS_ISBN);
+            int orderQuantity = resultSet.getInt(DatabaseManager.ORDERS_QUANTITY);
+            String shippingStatus = resultSet.getString(DatabaseManager.ORDERS_SHIPPING_STATUS);
+            String orderDate = resultSet.getString(DatabaseManager.ORDERS_DATE);
+            System.out.println("------------- Order History -------------");
+            System.out.println(DatabaseManager.ORDERS_OID + ": " + orderOID);
+            System.out.println(DatabaseManager.ORDERS_ISBN + ": " + orderISBN);
+            System.out.println(DatabaseManager.ORDERS_QUANTITY + ": " + orderQuantity);
+            System.out.println(DatabaseManager.ORDERS_SHIPPING_STATUS + ": " + shippingStatus);
+            System.out.println(DatabaseManager.ORDERS_DATE + ": " + orderDate);
+            System.out.println("------------------------------------------");
+        }
+    }
+
     public void runOption2_3() throws SQLException {
         System.out.println("Please enter your name: ");
         String name = scanner.nextLine();
@@ -410,20 +429,7 @@ public class Main {
         resultSet = databaseManager.queryDatabase("SELECT * FROM " + DatabaseManager.TABLE_ORDERS
                 + " WHERE " +  DatabaseManager.ORDERS_UID + " = '" + uID + "'"); // select all orders with this customer
 
-        while (resultSet.next()) {
-            String orderOID = resultSet.getString(DatabaseManager.ORDERS_OID);
-            String orderISBN = resultSet.getString(DatabaseManager.ORDERS_ISBN);
-            int orderQuantity = resultSet.getInt(DatabaseManager.ORDERS_QUANTITY);
-            String shippingStatus = resultSet.getString(DatabaseManager.ORDERS_SHIPPING_STATUS);
-            String orderDate = resultSet.getString(DatabaseManager.ORDERS_DATE);
-            System.out.println("------------- Order History -------------");
-            System.out.println(DatabaseManager.ORDERS_OID + ": " + orderOID);
-            System.out.println(DatabaseManager.ORDERS_ISBN + ": " + orderISBN);
-            System.out.println(DatabaseManager.ORDERS_QUANTITY + ": " + orderQuantity);
-            System.out.println(DatabaseManager.ORDERS_SHIPPING_STATUS + ": " + shippingStatus);
-            System.out.println(DatabaseManager.ORDERS_DATE + ": " + orderDate);
-            System.out.println("------------------------------------------");
-        }
+        printOrderInfo(resultSet);
     }
 
     public void printOption2() {
@@ -484,9 +490,13 @@ public class Main {
     public void runOption3_2() throws SQLException {
         System.out.println("Please enter the shipping status: ");
         String shippingStatus = scanner.nextLine();
-        // TODO: SQL Query
-        ResultSet resultSet = databaseManager.queryDatabase(""); // select all orders with shippingStatus
-        // TODO: Print result
+        ResultSet resultSet = databaseManager.queryDatabase("SELECT " + DatabaseManager.ORDERS_OID + ", "
+                + DatabaseManager.CUSTOMERS_UID + ", " + DatabaseManager.ORDERS_DATE + ", "
+                + DatabaseManager.ORDERS_ISBN + ", " + DatabaseManager.ORDERS_QUANTITY
+                + "FROM" + DatabaseManager.TABLE_ORDERS
+                + " WHERE " + DatabaseManager.ORDERS_SHIPPING_STATUS + " = '" + shippingStatus + "'"); // select all orders with shippingStatus
+
+        printOrderInfo(resultSet);
     }
 
     public void runOption3_3() throws SQLException {
@@ -501,9 +511,28 @@ public class Main {
             while (resultSet.next()) {
                 isbnList.add(resultSet.getString(DatabaseManager.BOOKS_ISBN));
             }
-
+            ArrayList<String> recordISBN = new ArrayList<>();
             for (String isbn : isbnList) {
                 // TODO: SQL Query
+                isbn = isbn.replace("\"", "");
+                String[] sep_ISBN = isbn.split(",");
+                //store separated book ISBN into a list
+                recordISBN.addAll(Arrays.asList(sep_ISBN));
+
+                //store book ISBNs as keys, corresponding occurrences as values
+                Map<String, Long> distinctISBN = recordISBN.stream().collect(
+                        Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+                //sort the map in desc order according to occurrences
+                Map<String, Long> DESC_ISBN = new LinkedHashMap<>();
+                distinctISBN.entrySet().stream().sorted(Map.Entry.<String, Long>comparingByValue()
+                        .reversed()).forEachOrdered(e -> DESC_ISBN.put(e.getKey(), e.getValue()));
+
+                String sortedISBN[] = DESC_ISBN.keySet().toArray(new String[0]);
+                String[] N_P_ISBN= new String[sortedISBN.length];
+
+//                for (int i = sortedISBN.length -1; i );
+
                 resultSet = databaseManager.queryDatabase(""); // search book by isbn
                 // TODO: Print the book info same as option2_1
             }
