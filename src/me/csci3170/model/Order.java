@@ -1,31 +1,13 @@
 package me.csci3170.model;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class Order {
+
+    // Variables to store the information of Order
     String oid, uid, date, shippingState;
     String isbnList;
     int quantity;
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    public Order() {
-        date = dateFormat.format(new Date());
-    }
-
-//    public Order(String oid, String uid, String isbnList) {
-//        this.oid = oid;
-//        this.uid = uid;
-//        date = dateFormat.format(new Date());
-//        this.isbnList = isbnList;
-//        quantity = isbnList.size();
-//        shippingState = "ordered";
-//    }
-
+    // Constructor method for Order
     public Order(String oid, String uid, String date, String isbnList, int quantity, String shippingState) {
         this.oid = oid;
         this.uid = uid;
@@ -35,10 +17,10 @@ public class Order {
         this.shippingState = shippingState;
     }
 
+    // Function to create a new Order instance
     public static Order createOrder(String[] metaData) {
         return new Order(metaData[0], metaData[1], metaData[2],
                 metaData[3], Integer.parseInt(metaData[4]), metaData[5]);
-        // String : "3-7503-0256-1, 2-0208-4796-3" -> ["3-7503-0256-1", "2-0208-4796-3"]
     }
 
     // Getter-Method

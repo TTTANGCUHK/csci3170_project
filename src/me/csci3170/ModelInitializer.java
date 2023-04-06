@@ -18,6 +18,7 @@ public class ModelInitializer {
 
     }
 
+    // Function to load Customers.csv and create the object
     public static List<Customer> getCustomer() {
         List<Customer> customers = new ArrayList<>();
         Path path = Paths.get("Customers.csv");
@@ -28,9 +29,7 @@ public class ModelInitializer {
                 line = bufferedReader.readLine();
                 if (line == null)
                     break;
-                //System.out.print(Arrays.toString(csvSplit(line)));
                 Customer customer = Customer.createCustomer(csvSplit(line));
-                //System.out.print(customer);
                 customers.add(customer);
             }
         } catch (IOException e) {
@@ -40,6 +39,7 @@ public class ModelInitializer {
         return customers;
     }
 
+    // Function to load Orders.csv and create the object
     public static List<Order> getOrder() {
         List<Order> orders = new ArrayList<>();
         Path path = Paths.get("Orders.csv");
@@ -50,9 +50,7 @@ public class ModelInitializer {
                 line = bufferedReader.readLine();
                 if (line == null)
                     break;
-                //System.out.print(Arrays.toString(csvSplit(line)));
                 Order order = Order.createOrder(csvSplit(line));
-                //System.out.print(order);
                 orders.add(order);
             }
         } catch (IOException e) {
@@ -62,6 +60,7 @@ public class ModelInitializer {
         return orders;
     }
 
+    // Function to load Books.csv and create the object
     public static List<Book> getBook() {
         List<Book> books = new ArrayList<>();
         Path path = Paths.get("Books.csv");
@@ -72,17 +71,7 @@ public class ModelInitializer {
                 line = bufferedReader.readLine();
                 if (line == null)
                     break;
-                //System.out.print(Arrays.toString(csvSplit(line)));
                 Book book = Book.createBook(csvSplit(line));
-                /*
-                System.out.println(book);
-                System.out.println("=====================");
-                System.out.println(book.getAuthors());
-                for (String author : book.getAuthors()) {
-                    System.out.println(author);
-                }
-                System.out.println("=====================");
-                */
                 books.add(book);
             }
 
@@ -93,6 +82,7 @@ public class ModelInitializer {
         return books;
     }
 
+    // Function to split only by column to avoid over splitting
     private static String[] csvSplit(String string) {
         String[] oldString = string.split(",");
         boolean flag = true;

@@ -5,14 +5,14 @@ import me.csci3170.model.Customer;
 import me.csci3170.model.Order;
 
 import java.sql.*;
-import java.util.InputMismatchException;
 import java.util.List;
 
 public class DatabaseManager {
 
-//    String USERNAME = "csci3170", PASSWORD = "testfor3170";
+    // Variables that store the account for connecting the mySQL database server
     String USERNAME = "root", PASSWORD = "csci3170" , DB_URL = "jdbc:mysql://localhost:3306/csci3170";
 
+    // Variables that store the table name and column label to prevent typo in query
     public static String TABLE_BOOKS = "Books", TABLE_ORDERS = "Orders", TABLE_CUSTOMERS = "Customers";
     public static String BOOKS_ISBN = "ISBN", BOOKS_TITLE = "Title", BOOKS_AUTHORS = "Authors"
             , BOOKS_PRICE = "Price", BOOKS_STOCK = "Stock";
@@ -34,11 +34,15 @@ public class DatabaseManager {
 
     public <T> void insertDatabase(List<T> tList, Class<T> tClass) throws SQLException {
         int i;
+        // Inserting Book records
         if (tClass.isAssignableFrom(Book.class)) {
             i = 0;
             System.out.println("Uploading Book Records");
+            // Insert SQL
             preparedStatement = database.prepareStatement("INSERT INTO " + TABLE_BOOKS + " VALUES (?, ?, ?, ?, ?)");
+            // For each item in the list, put all the items corresponding to the column in table
             for (T item : tList) {
+                // Check if the item is an object of Book
                 if (item instanceof Book book) {
                     i++;
                     System.out.println("Uploading " + i + "/" + tList.size() + " Book Records");
@@ -47,11 +51,15 @@ public class DatabaseManager {
                     preparedStatement.setString(3, book.getAuthors());
                     preparedStatement.setDouble(4, book.getPrice());
                     preparedStatement.setInt(5, book.getStock());
+                    // Update the table
                     preparedStatement.executeUpdate();
                 }
             }
             System.out.println("Upload Book Records Finished, inserted " + i + " records");
+            // Update the book records counting
             Main.bookRecords = i;
+
+            // Same as above but the object type changed to Order from Book
         } else if (tClass.isAssignableFrom(Order.class)) {
             i = 0;
             System.out.println("Uploading Order Records");
@@ -71,6 +79,8 @@ public class DatabaseManager {
             }
             System.out.println("Upload Order Records Finished, inserted " + i + " records");
             Main.orderRecords = i;
+
+            // Same as above but the object type changed to Customer from Order
         } else if (tClass.isAssignableFrom(Customer.class)) {
             i = 0;
             System.out.println("Uploading Customer Records");
@@ -92,7 +102,7 @@ public class DatabaseManager {
         preparedStatement.close();
     }
 
-
+    // This function used to update the database such as creating, updating and dropping the table
     public void updateDatabase(String sqlQuery) throws SQLException {
         if (getDatabase() == null){
             System.out.println("getDatabase is null");
@@ -100,29 +110,18 @@ public class DatabaseManager {
         }
         statement = getDatabase().createStatement();
         statement.executeUpdate(sqlQuery);
-
     }
 
-    // queryDatabase("SELECT ISBN FROM Book")
-    // ISBN:
+    // This function used to do the query
     public ResultSet queryDatabase(String sqlQuery) throws SQLException {
         if (getDatabase() == null)
             return null;
         preparedStatement = getDatabase().prepareStatement(sqlQuery);
-
         return preparedStatement.executeQuery();
-
-//        return preparedStatement.executeQuery();
-//        statement = getDatabase().createStatement();
-//        return statement.executeQuery(sqlQuery);
     }
 
-    public void closeStatement() throws SQLException {
-        if (statement != null && !statement.isClosed())
-            statement.close();
-    }
-
-    public void startConnection() throws SQLException {
+    // This function used to start the connection to the mySQL database server
+    public void startConnection() {
         try {
             // Register JDBC driver
             // Loading class `com.mysql.jdbc.Driver'. This is deprecated. The new driver class is `com.mysql.cj.jdbc.Driver'
@@ -132,10 +131,6 @@ public class DatabaseManager {
             System.out.println("Connecting to database...");
             database = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
 
-
-
-            // Clean-up environment
-
         } catch(SQLException se) {
             // Handle errors for JDBC
             se.printStackTrace();
@@ -144,12 +139,9 @@ public class DatabaseManager {
             e.printStackTrace();
         }
 
-
-////        database = DriverManager.getConnection("jdbc:mysql://projgw.cse.cuhk.edu.hk:2712/" + USERNAME + "?autoRe\n" +
-////                "connect=true&useSSL=false", USERNAME, PASSWORD);
-
     }
 
+    // This function used to close all the statement, connection
     public void closeConnection() throws SQLException {
         if (getDatabase() == null)
             return;

@@ -1,22 +1,20 @@
 package me.csci3170.model;
 
 public class Customer {
-    static int customerCounter = 0;
+
+    // Variables to store the information of Customer
     String uid, name, address;
 
-    public Customer() {
-        customerCounter++;
-    }
-
+    // Constructor method for Customer
     public Customer(String uid, String name, String address) {
         this.uid = uid;
         this.name = name;
         this.address = address;
-        customerCounter++;
     }
 
-    public static Customer createCustomer(String[] metaDate) {
-        return new Customer(metaDate[0], metaDate[1], metaDate[2]);
+    // Function to create a new Customer instance
+    public static Customer createCustomer(String[] metaData) {
+        return new Customer(metaData[0], metaData[1], metaData[2]);
     }
 
     // Getter-Method

@@ -1,37 +1,29 @@
 package me.csci3170.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class Book {
-    static int bookCounter = 0;
+
+    // Variables to store the information of Book
     String isbn, title;
     String authors;
     double price;
     int stock;
 
-    // Empty constructor
-    public Book() {
-        bookCounter++;
-    }
-
-    // Constructor with initializing the data
+    // Constructor method for Book
     public Book(String isbn, String title, String authors, double price, int stock) {
         this.isbn = isbn;
         this.title = title;
         this.authors = authors;
         this.price = price;
         this.stock = stock;
-        bookCounter++;
     }
 
+    // Function to create a new Book instance
     public static Book createBook(String[] metaData) {
         return new Book(metaData[0], metaData[1], metaData[2]
                 , Double.parseDouble(metaData[3]), Integer.parseInt(metaData[4]));
     }
 
+    // Overriding a toString() method to print the Book object
     @Override
     public String toString() {
         return "[ISBN = " + this.isbn
